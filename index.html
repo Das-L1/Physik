@@ -27,6 +27,7 @@
             background-color: var(--bg-deep);
             color: var(--text-main);
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            /* Mobile-friendly: no overflow-hidden */
             width: 100vw;
             min-height: 100vh;
             display: flex;
@@ -78,6 +79,7 @@
         .orbit-1 { width: 55vw; height: 55vw; min-width: 310px; min-height: 310px; }
         .orbit-2 { width: 85vw; height: 85vw; min-width: 450px; min-height: 450px; }
 
+        /* --- Moon wrappers and moons --- */
         .moon-wrapper {
             position: absolute; top: 50%; left: 50%; width: 0; height: 0;
             animation: rotateOrbit var(--speed) linear infinite;
@@ -97,6 +99,7 @@
             animation: counterRotate var(--speed) linear infinite; 
         }
 
+        /* Responsive orbit radii in vw */
         .mw-1 { --speed: 25s; }
         .m-1 { left: 27.5vw; top: 0; }
         .mw-2 { --speed: 30s; animation-delay: -5s; }
@@ -110,6 +113,7 @@
         .mw-6 { --speed: 48s; animation-delay: -15s; }
         .m-6 { left: 0; top: -42.5vw; }
 
+        /* --- CONTENT PANELS --- */
         .content-panel {
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%) scale(0);
@@ -136,6 +140,7 @@
         .highlight { color: var(--blue-baby); font-weight: bold; }
         .data-point { color: var(--mint); font-family: monospace; }
 
+        /* VIZ STYLES IN vw OR % or clamp for mobile */
         .viz-container {
             display: flex; justify-content: center; align-items: center; margin: 2vw 0;
             padding: 2vw; background: rgba(255, 255, 255, 0.05); border-radius: 1vw;
@@ -159,6 +164,7 @@
         @keyframes planetCrossing { 0% { left: -2vw; } 100% { left: 30vw; } }
         @keyframes starDimming { 0%, 30%, 70%, 100% { opacity: 1; } 45%, 55% { opacity: 0.6; } }
 
+        /* Habitable Zone */
         .hz-container {
             position: relative; width: 100%; height: 16vw; min-height: 90px; background: rgba(255,255,255,0.05); border-radius: 1vw;
             display: flex; align-items: center; padding: 0 2vw; overflow: hidden;
@@ -199,18 +205,11 @@
             pointer-events: none; z-index: 200;
         }
 
-        #overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.65);
-            z-index: 99;
-            display: none;
-        }
-
         @keyframes rotateOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes counterRotate { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
         .paused { animation-play-state: paused !important; }
 
+        /* Responsive breakpoints */
         @media (max-width: 700px) {
             .orbit-1 { width: 70vw; height: 70vw; min-width: 180px; min-height: 180px;}
             .orbit-2 { width: 95vw; height: 95vw; min-width: 270px; min-height: 270px;}
@@ -301,14 +300,13 @@
         <p>Der Großteil des Weltraums ist noch unerforscht. Die Suche nach einer "zweiten Erde" geht weiter.</p>
     </div>
 
-    <div class="nav-hint">Klicke einen Mond zum Zoomen | Drücke ESC oder ins Leere für Reset</div>
-    <div id="overlay"></div>
+    <div class="nav-hint">Klicke einen Mond zum Zoomen | Drücke ESC für Reset</div>
+
     <script>
         const universe = document.getElementById('universe');
         const wrappers = document.querySelectorAll('.moon-wrapper');
         const moons = document.querySelectorAll('.moon');
         const contents = document.querySelectorAll('.content-panel');
-        const overlay = document.getElementById('overlay');
         let isZoomed = false;
 
         function zoomTo(element, contentId) {
@@ -329,9 +327,6 @@
             universe.style.transform = `translate(${diffX * 3}px, ${diffY * 3}px) scale(4)`; 
             document.getElementById(contentId).classList.add('active');
 
-            // Show overlay
-            overlay.style.display = 'block';
-
             if (contentId === 'content-hist') startCounter();
         }
 
@@ -341,8 +336,6 @@
 
             contents.forEach(c => c.classList.remove('active'));
             universe.style.transform = `translate(0, 0) scale(1)`;
-
-            overlay.style.display = 'none';
 
             setTimeout(() => {
                 wrappers.forEach(w => w.classList.remove('paused'));
@@ -379,18 +372,11 @@
             }, 10);
         }
 
-        // Close panel on overlay click
-        overlay.addEventListener('click', resetZoom);
-
-        // Do not close when clicking into content panel
-        contents.forEach(panel => {
-            panel.addEventListener('click', e => e.stopPropagation());
-        });
-
         document.addEventListener('keydown', (e) => {
             if (e.key === "Escape") resetZoom();
         });
 
+        // On resize/mobile rotate, reset zoom to keep UI sane
         window.addEventListener('resize', resetZoom);
     </script>
 </body>
