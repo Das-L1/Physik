@@ -401,6 +401,9 @@
         const backButton = document.getElementById('backButton');
         let isZoomed = false;
 
+        // Initialisiere den Transform beim Laden
+        universe.style.transform = 'translate(0px, 0px) scale(1)';
+
         // Event-Listener für alle Monde (Click & Touch)
         moons.forEach(moon => {
             moon.addEventListener('click', function(e) {
@@ -420,42 +423,47 @@
             if (isZoomed) return;
             isZoomed = true;
 
+            // Pausiere die Animationen
             wrappers.forEach(w => w.classList.add('paused'));
             moons.forEach(m => m.classList.add('paused'));
 
-            // Stelle sicher dass wir vom Ausgangspunkt aus rechnen
-            universe.style.transform = 'translate(0px, 0px) scale(1)';
+            // Berechne die Zentrierung basierend auf der aktuellen Position
+            const rect = element.getBoundingClientRect();
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const elemX = rect.left + rect.width / 2;
+            const elemY = rect.top + rect.height / 2;
+            const diffX = centerX - elemX;
+            const diffY = centerY - elemY;
+
+            // Stelle sicher dass die Transition aktiv ist
+            universe.style.transition = 'transform 1s cubic-bezier(0.25, 1, 0.5, 1)';
             
-            // Warte einen Frame damit der Browser den Reset verarbeitet
-            requestAnimationFrame(() => {
-                const rect = element.getBoundingClientRect();
-                const centerX = window.innerWidth / 2;
-                const centerY = window.innerHeight / 2;
-                const elemX = rect.left + rect.width / 2;
-                const elemY = rect.top + rect.height / 2;
-                const diffX = centerX - elemX;
-                const diffY = centerY - elemY;
+            // Wende den Zoom-Transform an
+            universe.style.transform = `translate(${diffX * 3}px, ${diffY * 3}px) scale(4)`; 
+            
+            // Zeige den Content und Button
+            document.getElementById(contentId).classList.add('active');
+            backButton.classList.add('visible');
 
-                universe.style.transform = `translate(${diffX * 3}px, ${diffY * 3}px) scale(4)`; 
-                document.getElementById(contentId).classList.add('active');
-                backButton.classList.add('visible');
-
-                if (contentId === 'content-hist') startCounter();
-            });
+            if (contentId === 'content-hist') startCounter();
         }
 
         function resetZoom() {
             if (!isZoomed) return;
             isZoomed = false;
 
+            // Schließe alle Content-Panels
             contents.forEach(c => c.classList.remove('active'));
             
-            // Explizites Zurücksetzen des Transforms um Kumulierung zu vermeiden
-            universe.style.transform = '';
+            // Verstecke den Zurück-Button
+            backButton.classList.remove('visible');
+            
+            // Setze den Transform zurück
+            universe.style.transition = 'transform 1s cubic-bezier(0.25, 1, 0.5, 1)';
             universe.style.transform = 'translate(0px, 0px) scale(1)';
             
-            backButton.classList.remove('visible');
-
+            // Warte bis die Zoom-Animation fertig ist, dann reaktiviere die Rotationen
             setTimeout(() => {
                 wrappers.forEach(w => w.classList.remove('paused'));
                 moons.forEach(m => m.classList.remove('paused'));
